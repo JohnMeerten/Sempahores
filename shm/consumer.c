@@ -11,22 +11,31 @@
 
 struct cijfer_t{
 	int waarde;
-	char* uitspraak;	
+	char uitspraak[10];	
 };
 
 int main()
 {
-	printf("kom ik hier");
 	int shm_fd = -1;
 	char* sharedmemoryadress;
-	const char* shmname = "mysharedmemory4";
+	sem_t* lezen;
+	sem_t* schrijven;
+	const char* shmname = "/mysharedmemory";
+	const char* semname = "/uitlezen";
+	const char* semname2= "/schrijven";
 	struct cijfer_t* dataptr[10];
 	int size = sizeof(struct cijfer_t);
-	//sem_t* lezen = sem_open("/lezen1",0);
-	shm_fd = shm_open (shmname,O_RDWR, 0600);
-	
-	
-	if (shm_fd == -1)
+
+	lezen = sem_open (semname, 0);
+	schrijven = sem_open (semname2,1);
+		
+	if (lezen == SEM_FAILED)
+	{
+		perror ("ERROR: sem_open() failed");
+		return -1;
+	}
+
+	if ((shm_fd = shm_open (shmname, O_CREAT | O_RDWR, 0666))== -1)
     {
         perror ("ERROR: shm_open() failed. Exiting now.");
         return -1;
@@ -62,16 +71,19 @@ int main()
 	{
 		for(int i =0; i <10; i++)
 		{
-			//sem_post(lezen);
+			sem_wait(schrijven);
 			printf("%i", dataptr[i]->waarde);
-			printf("%s \n", dataptr[i]->uitspraak);
+			printf("%s\n", dataptr[i]->uitspraak);
+			sem_post(lezen);
 			x++;
-			
 		}
 	}	
 	
+
 	munmap(dataptr, size);
     close(shm_fd);
+    sem_unlink (semname);
+    sem_unlink (semname2);
     shm_unlink(shmname);
     return 0;
 }

@@ -7,8 +7,8 @@ LDFLAGS = -lrt -pthread
 all: consumer producer
 
 consumer : consumer.c
-	$(CC) $(CFLAGS) consumer.c -o consumer $(LDFLAGS)
+	$(CC) $(CFLAGS) consumer.c -g -o consumer $(LDFLAGS)
 
 producer : producer.c
-	$(CC) $(CFLAGS) producer.c -o producer $(LDFLAGS) 
+	$(CC) $(CFLAGS) producer.c -g -o producer $(LDFLAGS) 
 

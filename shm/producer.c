@@ -11,14 +11,18 @@
 
 struct cijfer_t{
 	int waarde;
-	char* uitspraak;	
+	char uitspraak[10];	
 };
 
 int main()
 {
 	int  shm_fd = -1;
 	char* sharedmemoryadress;
-	const char* shmname = "mysharedmemory4";
+	sem_t* lezen;
+	sem_t* schrijven;
+	const char* shmname = "/mysharedmemory";
+	const char* semname = "/uitlezen";
+	const char* semname2 = "/schrijven";
 	struct cijfer_t* dataptr[10];
 	struct cijfer_t cijfers[] = {{.waarde = 0, .uitspraak = "null"},
 								{ .waarde = 1, .uitspraak ="een"},
@@ -32,10 +36,21 @@ int main()
 								{ .waarde =9, .uitspraak="negen"}
 								};
 	int size = sizeof(struct cijfer_t);
-	sem_t* lezen = sem_open("/lezen1",O_CREAT,0777, 1);
+	lezen = sem_open (semname, O_CREAT, 0600, 1);
+	if (lezen == SEM_FAILED)
+	{
+		perror ("ERROR: sem_open() failed");
+		return -1;
+	}
+	schrijven = sem_open (semname2, O_CREAT, 0600, 0);
+	if (schrijven == SEM_FAILED)
+	{
+		perror ("ERROR: sem_open() failed");
+		return -1;
+	}
 	// making a shared memory handle.
 	printf ("Creating the following shared memory handle: ('%s')\n", shmname);
-	shm_fd = shm_open (shmname, O_CREAT | O_EXCL | O_RDWR, 0600);
+	shm_fd = shm_open (shmname, O_CREAT | O_RDWR, 0666);
 	
 	if (shm_fd == -1)
     {
@@ -73,15 +88,19 @@ int main()
 	{
 		for(int i =0; i <10; i++)
 		{	
-			
-			dataptr[i]->waarde = cijfers[i].waarde;
-			dataptr[i]->uitspraak = cijfers[i].uitspraak;
-			x++;
 			sem_wait(lezen);
+			dataptr[i]->waarde = cijfers[i].waarde;
+			strcpy(dataptr[i]->uitspraak, cijfers[i].uitspraak);
+			x++;
+			sem_post(schrijven);
 		}
 	}
 	
+
 	munmap(dataptr, size);
     close(shm_fd);
+    sem_unlink(semname2);
+    sem_unlink (semname);
     shm_unlink(shmname);
+    return 0;
 }
