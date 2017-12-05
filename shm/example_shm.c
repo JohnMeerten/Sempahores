@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <sys/fcntl.h>
 
+
 static int  shm_fd = -1;
 
 static char * 
