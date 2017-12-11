@@ -17,7 +17,6 @@ struct cijfer_t{
 int main()
 {
 	int shm_fd = -1;
-	char* sharedmemoryadress;
 	sem_t* lezen;
 	sem_t* schrijven;
 	const char* shmname = "/mysharedmemory";
@@ -48,14 +47,6 @@ int main()
 		perror("ERROR: truncate() failed. Exiting now.");
 		return -1;
 	}
-	
-	// allocating memory.
-	sharedmemoryadress = (char *) mmap (NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
-	if (sharedmemoryadress == MAP_FAILED)
-    {
-        perror ("ERROR: mmap() failed. Exiting now.");
-        return -1;
-    }
     
     // make 10 spaces for numbers
 	for(int i =0; i<10; i++){
