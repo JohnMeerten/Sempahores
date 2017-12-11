@@ -82,13 +82,15 @@ int main()
 			sem_wait(lezen);
 			dataptr[i]->waarde = cijfers[i].waarde;
 			strcpy(dataptr[i]->uitspraak, cijfers[i].uitspraak);
-			x++;
 			sem_post(schrijven);
+			x++;
 		}
 	}
 	
-
-	munmap(dataptr, size);
+	for(int i =0; i<10;i++)
+	{
+	munmap(dataptr[i], size);
+	}
     close(shm_fd);
     sem_unlink(semname2);
     sem_unlink (semname);

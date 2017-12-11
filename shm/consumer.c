@@ -25,10 +25,14 @@ int main()
 	struct cijfer_t* dataptr[10];
 	int size = sizeof(struct cijfer_t);
 
-	lezen = sem_open (semname, 0);
-	schrijven = sem_open (semname2,1);
-		
+	lezen = sem_open (semname, 0);		
 	if (lezen == SEM_FAILED)
+	{
+		perror ("ERROR: sem_open() failed");
+		return -1;
+	}
+    schrijven = sem_open (semname2,1);
+	if (schrijven == SEM_FAILED)
 	{
 		perror ("ERROR: sem_open() failed");
 		return -1;
@@ -62,7 +66,7 @@ int main()
 	{
 		for(int i =0; i <10; i++)
 		{
-			sem_wait(schrijven);
+		    sem_wait(schrijven);
 			printf("%i", dataptr[i]->waarde);
 			printf("%s\n", dataptr[i]->uitspraak);
 			sem_post(lezen);
@@ -71,7 +75,10 @@ int main()
 	}	
 	
 
-	munmap(dataptr, size);
+	for(int i =0; i<10;i++)
+	{
+	munmap(dataptr[i], size);
+	}
     close(shm_fd);
     sem_unlink (semname);
     sem_unlink (semname2);
